@@ -1,0 +1,142 @@
+创建版本库
+版本库又名仓库，英文名repository，可以简单的理解成一个目录，这个目录里面的所有文件都可以被Git管理起来，每个文件的修改、删除，Git都能跟踪，
+以便任何时刻都可以追踪历史，或者在将来某个时刻可以“还原”。
+  $ mkdir learngit            //创建目录，命名为learngit
+  $ cd learngit               //进入learngit目录
+  $ pwd                       //显示当前目录
+则仓库当前所在的位置在/Users/usersname/learngit
+
+第二步，通过git init命令把当前目录变成Git可以管理的仓库：
+  $ git init
+  Initialized empty Git repository in /Users/usersname/learngit/.git/
+如此Git仓库就建好了，目前是一个空的仓库（empty Git repository）
+注： .git文件是Git用来跟踪管理版本库的，不要轻易修改，否则容易把Git仓库破坏。该目录默认隐藏，用ls -ah命令可以查看。
+
+
+把文件添加到版本库
+现在我们编写一个readme.txt文件，内容如下：
+  Git is a version control system.
+  Git is free software.
+该文件一定要放在learngit目录（子目录）下，因为这是一个Git仓库，放到仓库之外便无法进行管理操作。
+
+把一个文件放到Git只需要两步：
+第一步，用git add命令，把文件添加到仓库；
+  $ git add readme.txt
+  
+第二步，用git commit命令，把文件提交到仓库；
+  $ git commit -m "wrote a readme file"
+  [master (root-commit) f98cf85] wrote a readme file
+   1 file changed, 2 insertions(+)
+   create mode 100644 readme.txt
+   
+成功添加并提交了readme.txt文件，现在继续修改readme.txt文件，内容如下：
+  Git is a distributed version control system.
+  Git is free software.
+  
+现在，运行git status命令查看结果：
+  $ git status
+  On branch master
+  Changes not staged for commit:
+    (use "git add <file>..." to update what will be committed)
+    (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   readme.txt
+
+  no changes added to commit (use "git add" and/or "git commit -a")
+git status命令可以让我们时刻掌握仓库当前的状态，上面的命令告诉我们，文件以及被修改过了，但还没有准备提交的修改。
+
+现在，运行git diff命令查看结果：
+  $ git diff
+  diff --git a/readme.txt b/readme.txt
+  index d8036c1..013b5bc 100644
+  --- a/readme.txt
+  +++ b/readme.txt
+  @@ -1,2 +1,2 @@
+  -Git is a version control system.
+  +Git is a distributed version control system.
+   Git is free software.
+  \ No newline at end of file
+git diff顾名思义就是查看difference，显示的格式正是Unix通用的diff格式，可以从上面的命令输出结果了解到我们做了哪些修改，如我们在第一行添加
+了一个“distributed”单词。
+
+确认修改后我们就可以使用add和commit命令，将文件添加并提交到版本库中。
+
+
+版本回退
+现在我们再次修改readme.txt文件，修改内容如下：
+  Git is a distributed version control system.
+  Git is free software distributed under the GPL.
+然后尝试提交：
+  $ git add readme.txt
+  $ git commit -m "add GPL"
+  [master 47d720d] add GPL
+   1 file changed, 2 insertions(+), 2 deletions(-)
+在我们不断修改文件是，add和commit命令帮助我们去及时更新和保存文件操作。但是在修改过程中无可避免会出现一些差错，一旦把文件改乱了，或者误删了
+文件，我们可以从最近的一次commit操作中恢复，然后继续工作。
+
+现在，我们回顾一下readme.txt文件一共有几个版本被提交到Git仓库里了：
+
+    版本1：wrote a readme file
+
+    Git is a version control system.
+    Git is free software.
+
+    版本2：add distributed
+
+    Git is a distributed version control system.
+    Git is free software.
+
+    版本3：add GPL
+
+    Git is a distributed version control system.
+    Git is free software distributed under the GPL.
+
+然而在实际开发过程中，我们可能会无数次修改文件从而产生成百上千个版本，如此我们就需要利用Git中的log命令查看历史版本。
+现在，运行git log命令查看结果：
+  $ git log
+  commit 3628164fb26d48395383f8f31179f24e0882e1e0
+  Author: Michael Liao <askxuefeng@gmail.com>
+  Date:   Tue Aug 20 15:11:49 2013 +0800
+
+      append GPL
+
+  commit ea34578d5496d7dd233c827ed32a8cd576c5ee85
+  Author: Michael Liao <askxuefeng@gmail.com>
+  Date:   Tue Aug 20 14:53:12 2013 +0800
+
+      add distributed
+
+  commit cb926e7ea50ad11b8f9e909c05226233bf755030
+  Author: Michael Liao <askxuefeng@gmail.com>
+  Date:   Mon Aug 19 17:51:55 2013 +0800
+
+      wrote a readme file
+      
+git log命令显示从最近到最远的提交日志。如果想要简化输出，可以在命令之后加上 --pretty=oneline参数：
+  $ git log --pretty=oneline
+  3628164fb26d48395383f8f31179f24e0882e1e0 append GPL
+  ea34578d5496d7dd233c827ed32a8cd576c5ee85 add distributed
+  cb926e7ea50ad11b8f9e909c05226233bf755030 wrote a readme file
+
+如果要回退版本，首先必须要知道当前版本是哪个版本，在Git中，用HEAD表示当前版本，也就是最新的提交ID，上一个版本是HEAD^，上上个版本是HEAD^^，
+指定数量的写法为HEAD~NUM
+
+现在，把当前版本回退到上一版本，使用命令git reset：
+  $ git reset --hard HEAD^
+  
+在命令行窗口还没有被关掉的时候，我们还可以根据版本的commit id来指定回到某个版本,命令如下：
+  $ git reser --hard commit_id
+  
+如果命令行已经关闭，我们使用git reflog命令查看命令历史，以便寻找id，确定回到未来的哪个版本。
+
+
+
+
+
+工作区与暂存区的概念
+
+管理修改
+
+撤销修改
+
+删除文件
